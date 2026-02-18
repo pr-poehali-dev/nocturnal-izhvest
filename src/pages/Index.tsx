@@ -81,6 +81,82 @@ function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: stri
   );
 }
 
+const CONTACT_URL = "https://functions.poehali.dev/d7257cc2-5dfd-408c-9451-92e33fe10c49";
+
+function ContactForm() {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("sending");
+    try {
+      const res = await fetch(CONTACT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        setStatus("sent");
+        setForm({ name: "", email: "", message: "" });
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  if (status === "sent") {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <Icon name="Check" size={32} className="text-white/50 mb-4" />
+        <p className="text-lg font-serif text-white/70">Сообщение отправлено</p>
+        <p className="text-sm text-white/40 mt-2 font-sans">Мы свяжемся с вами в ближайшее время</p>
+      </div>
+    );
+  }
+
+  return (
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Ваше имя"
+        required
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm font-sans text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
+      />
+      <input
+        type="email"
+        placeholder="E-mail"
+        required
+        value={form.email}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
+        className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm font-sans text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
+      />
+      <textarea
+        placeholder="Сообщение"
+        required
+        rows={4}
+        value={form.message}
+        onChange={(e) => setForm({ ...form, message: e.target.value })}
+        className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm font-sans text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors resize-none"
+      />
+      <button
+        type="submit"
+        disabled={status === "sending"}
+        className="w-full py-3 border border-white/20 text-xs uppercase tracking-[0.2em] font-sans hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50"
+      >
+        {status === "sending" ? "Отправка..." : status === "error" ? "Попробовать снова" : "Отправить"}
+      </button>
+      {status === "error" && (
+        <p className="text-sm text-red-400/70 text-center font-sans">Не удалось отправить. Попробуйте позже.</p>
+      )}
+    </form>
+  );
+}
+
 export default function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -453,10 +529,10 @@ export default function Index() {
                   Заказы и вопросы
                 </p>
                 <a
-                  href="mailto:hello@example.com"
+                  href="mailto:vankarev@mail.ru"
                   className="text-lg font-serif text-white/70 hover:text-white transition-colors"
                 >
-                  hello@example.com
+                  vankarev@mail.ru
                 </a>
               </div>
               <div>
@@ -478,35 +554,7 @@ export default function Index() {
               </div>
             </div>
 
-            <form
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                alert("Спасибо! Мы свяжемся с вами в ближайшее время.");
-              }}
-            >
-              <input
-                type="text"
-                placeholder="Ваше имя"
-                className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm font-sans text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
-              />
-              <input
-                type="email"
-                placeholder="E-mail"
-                className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm font-sans text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
-              />
-              <textarea
-                placeholder="Сообщение"
-                rows={4}
-                className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm font-sans text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors resize-none"
-              />
-              <button
-                type="submit"
-                className="w-full py-3 border border-white/20 text-xs uppercase tracking-[0.2em] font-sans hover:bg-white hover:text-black transition-all duration-300"
-              >
-                Отправить
-              </button>
-            </form>
+            <ContactForm />
           </div>
         </div>
       </Section>
